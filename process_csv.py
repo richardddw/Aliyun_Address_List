@@ -40,3 +40,8 @@ with open('list/esa_ip_list_latest.txt', 'w') as f:
 os.makedirs('Archive', exist_ok=True)
 archive_path = os.path.join('Archive', os.path.basename(latest_csv))
 os.rename(latest_csv, archive_path)
+
+# 清理 upload 文件夹中剩余的 CSV 文件
+for f in glob('upload/esa_ip_list_*.csv'):
+    if os.path.exists(f):
+        os.remove(f)
