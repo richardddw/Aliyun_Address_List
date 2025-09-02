@@ -30,7 +30,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git remote set-url origin https://x-access-token:${TOKEN}@github.com/richardddw/Aliyun_ESA_IP_LIST.git
           git add list/esa_ip_list_latest.txt Archive/
           git commit -m "Processed latest ESA IP list and archived CSV"
           git push
