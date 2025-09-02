@@ -30,8 +30,8 @@ now = datetime.now(tz)
 timestamp = now.strftime('### %Y/%m/%d %H:%M')
 
 # 写入 list 文件夹
-os.makedirs('list', exist_ok=True)
-with open('list/esa_ip_list_latest.txt', 'w') as f:
+os.makedirs('docs', exist_ok=True)
+with open('docs/esa_ip_list_latest.txt', 'w') as f:
     f.write(timestamp + '\n')
     for ip in ip_list:
         f.write(ip.strip() + '\n')
