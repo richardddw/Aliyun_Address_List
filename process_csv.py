@@ -57,8 +57,9 @@ with open(index_path, 'w', encoding='utf-8') as f:
     f.write('<html><head><meta charset="UTF-8"><title>地址簿导航</title></head><body>\n')
     f.write('<h1>📒 地址簿列表</h1><ul>\n')
     for file in sorted(os.listdir('docs/address_books')):
-        name = file.replace('.txt', '')
-        f.write(f'<li><a href="address_books/{file}">{name}</a></li>\n')
+        if file.endswith('.txt'):
+            name = file.replace('.txt', '')
+            f.write(f'<li><a href="address_books/{file}">{name}</a></li>\n')
     f.write('</ul></body></html>')
 
 # 移动 CSV 文件到 Archive 文件夹
