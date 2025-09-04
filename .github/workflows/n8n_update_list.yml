@@ -1,0 +1,33 @@
+name: Process ESA IP List
+
+on:
+  push:
+    paths:
+      - 'upload/*.json'
+
+jobs:
+  process-latest-csv:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install pandas
+
+      - name: Parse latest json and generate IP list
+        run: python process_json.py
+
+      - name: Push changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add docs/ Archive/
+          git commit -m "auto Processed latest ESA IP list and archived CSV"
+          git push
