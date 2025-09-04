@@ -17,6 +17,20 @@ print(f"Processing latest JSON file: {json_file}")
 with open(json_file, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
+with open(json_file, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+if isinstance(data, dict):
+    acls = data.get("Acls", [])
+elif isinstance(data, list):
+    acls = data
+else:
+    raise Exception("Unexpected JSON structure")
+
+print(f"Found {len(acls)} address book entries")
+
+
+
 # 阿里云 API 返回的地址簿列表
 # 假设 data 是一个字典，里面有 "Acls" 键
 acls = data.get("Acls", [])
