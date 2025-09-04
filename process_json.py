@@ -1,12 +1,17 @@
 # process_json.py
 import os
+import glob
 import json
 from datetime import datetime, timedelta, timezone
 
-# 输入 JSON 文件路径
-json_file = 'upload/data*.json'
-if not os.path.exists(json_file):
-    raise Exception(f"JSON file not found: {json_file}")
+# 匹配 upload 目录下所有 dataYYYY-MM-DD.json
+json_files = glob.glob('upload/data*.json')
+if not json_files:
+    raise Exception("No JSON files found in upload folder.")
+
+# 按修改时间排序，取最新的一个
+json_file = max(json_files, key=os.path.getmtime)
+print(f"Processing latest JSON file: {json_file}")
 
 # 读取 JSON 内容
 with open(json_file, 'r', encoding='utf-8') as f:
