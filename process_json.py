@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timedelta, timezone
 
 # 输入 JSON 文件路径
-json_file = 'upload/data.json'
+json_file = 'upload/data*.json'
 if not os.path.exists(json_file):
     raise Exception(f"JSON file not found: {json_file}")
 
