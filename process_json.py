@@ -4,22 +4,19 @@ import glob
 import json
 from datetime import datetime, timedelta, timezone
 
-# 匹配 upload 目录下所有 dataYYYY-MM-DD.json
+# 1. 找到 upload 目录下最新的 data*.json
 json_files = glob.glob('upload/data*.json')
 if not json_files:
     raise Exception("No JSON files found in upload folder.")
 
-# 按修改时间排序，取最新的一个
 json_file = max(json_files, key=os.path.getmtime)
 print(f"Processing latest JSON file: {json_file}")
 
-# 读取 JSON 内容
+# 2. 读取 JSON
 with open(json_file, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
-with open(json_file, 'r', encoding='utf-8') as f:
-    data = json.load(f)
-
+# 3. 兼容两种结构
 if isinstance(data, dict):
     acls = data.get("Acls", [])
 elif isinstance(data, list):
@@ -29,62 +26,36 @@ else:
 
 print(f"Found {len(acls)} address book entries")
 
-
-
-# 阿里云 API 返回的地址簿列表
-# 假设 data 是一个字典，里面有 "Acls" 键
-acls = data.get("Acls", [])
-if not acls:
-    raise Exception("No Acls data found in JSON file.")
-
-# 获取当前时间（+8 时区）
+# 4. 获取当前时间（+8 时区）
 tz = timezone(timedelta(hours=8))
 now = datetime.now(tz)
 timestamp = now.strftime('### %Y/%m/%d %H:%M')
 
-# 创建输出目录
-os.makedirs('docs', exist_ok=True)
+# 5. 创建输出目录
 os.makedirs('docs/address_books', exist_ok=True)
 
-# 遍历所有地址簿，生成独立 txt 文件
+# 6. 遍历生成 txt 文件
 for acl in acls:
-    name = str(acl.get('Name', '')).strip().replace(' ', '_').replace('/', '_')
-    ip_data = acl.get('AddressList', '')
-
-    # AddressList 可能是字符串或列表
-    if isinstance(ip_data, list):
-        ip_list = ip_data
-    elif isinstance(ip_data, str):
-        ip_list = [ip.strip() for ip in ip_data.strip().split('\n') if ip.strip()]
-    else:
-        continue
-
+    name = str(acl.get('GroupName', '')).strip().replace(' ', '_').replace('/', '_')
+    ip_list = acl.get('AddressList', [])
     if not ip_list:
         continue
-
     file_path = os.path.join('docs/address_books', f'{name}.txt')
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(timestamp + '\n')
         for ip in ip_list:
             f.write(ip.strip() + '\n')
 
-# 单独处理 ESA 地址簿（保留原逻辑）
-esa_acl = next((acl for acl in acls if 'ESA Back-to-origin Address' in acl.get('Name', '')), None)
+# 7. 单独处理 ESA 地址簿
+esa_acl = next((acl for acl in acls if 'ESA Back-to-origin Address' in acl.get('GroupName', '')), None)
 if esa_acl:
-    ip_data = esa_acl.get('AddressList', '')
-    if isinstance(ip_data, list):
-        ip_list = ip_data
-    elif isinstance(ip_data, str):
-        ip_list = [ip.strip() for ip in ip_data.strip().split('\n') if ip.strip()]
-    else:
-        ip_list = []
-
+    ip_list = esa_acl.get('AddressList', [])
     with open('docs/esa_ip_list_latest.txt', 'w', encoding='utf-8') as f:
         f.write(timestamp + '\n')
         for ip in ip_list:
             f.write(ip.strip() + '\n')
 
-# 生成 index.html 导航页面
+# 8. 生成 index.html
 index_path = 'docs/index.html'
 with open(index_path, 'w', encoding='utf-8') as f:
     f.write('<html><head><meta charset="UTF-8"><title>地址簿导航</title></head><body>\n')
@@ -95,17 +66,13 @@ with open(index_path, 'w', encoding='utf-8') as f:
             f.write(f'<li><a href="address_books/{file}">{name}</a></li>\n')
     f.write('</ul></body></html>')
 
-# 归档 JSON 文件（按日期+序号命名）
+# 9. 归档 JSON 文件（dataYYYYMMDD-N.json）
 os.makedirs('Archive', exist_ok=True)
-
-# 获取当天日期字符串
-date_str = now.strftime('%Y%m%d')  # 例如 20250904
+date_str = now.strftime('%Y%m%d')
 base_name = f"data{date_str}"
-
-# 找出当天已有的归档文件，确定序号
 existing_files = [f for f in os.listdir('Archive') if f.startswith(base_name) and f.endswith('.json')]
+
 if existing_files:
-    # 提取已有文件的序号部分
     nums = []
     for f in existing_files:
         try:
@@ -117,11 +84,7 @@ if existing_files:
 else:
     next_num = 1
 
-# 生成新的归档文件名
 new_filename = f"{base_name}-{next_num}.json"
 archive_path = os.path.join('Archive', new_filename)
-
-# 移动并重命名文件
 os.rename(json_file, archive_path)
 print(f"已归档到: {archive_path}")
-
