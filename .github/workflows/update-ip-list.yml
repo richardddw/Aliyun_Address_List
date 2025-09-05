@@ -29,6 +29,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add docs/ Archive/
-          git commit -m "Processed latest ESA IP list and archived CSV"
+          git rm -f upload/esa_ip_list_*.csv || true
+          git commit -m "Processed latest ESA IP list, delete, and archived CSV"
           git push
 
